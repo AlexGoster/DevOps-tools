@@ -55,7 +55,7 @@ python tools/cli.py logs --file /var/log/nginx/access.log --errors-only
 python tools/cli.py ssl --domain example.com
 
 # Деплой приложения
-python tools/cli.py deploy --repo /app --branch main
+# deploy не подключён к текущему CLI; рабочий деплой в проверке не выполнялся
 ```
 
 ## Структура проекта
@@ -176,3 +176,14 @@ Last updated: 2026-09-27
 
 
 Last updated: 2026-09-27
+
+## Проверка
+
+```bash
+python -m pip install -r requirements.txt pytest
+python -m pytest
+python tools/cli.py health --host 127.0.0.1 --ports 1
+```
+
+В текущем CLI доступны health, backup, logs и ssl. Команд docker/deploy и планировщика нет.
+SSH, реальные деплои, уведомления и удаление реальных бэкапов не выполнялись.
