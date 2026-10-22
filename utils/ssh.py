@@ -5,13 +5,17 @@ from typing import Optional
 
 
 class SSHClient:
-    def __init__(self, host: str, port: int = 22, username: str = "", key_path: Optional[str] = None):
+    def __init__(self, host: str, port: int = 22, username: str = "", key_path: Optional[str] = None,
+                 known_hosts_path: Optional[str] = None):
         self.host = host
         self.port = port
         self.username = username
         self.key_path = key_path
         self.client = paramiko.SSHClient()
-        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.client.load_system_host_keys()
+        if known_hosts_path:
+            self.client.load_host_keys(known_hosts_path)
+        self.client.set_missing_host_key_policy(paramiko.RejectPolicy())
 
     def connect(self) -> None:
         kwargs = {"hostname": self.host, "port": self.port, "username": self.username}
