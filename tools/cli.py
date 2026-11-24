@@ -1,6 +1,11 @@
 """Main CLI entry point."""
 
 import click
+import sys
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from rich.console import Console
 from rich.table import Table
 
@@ -19,7 +24,12 @@ def cli():
 def health(host, ports):
     """Check server health"""
     from tools.server_health import health_check
-    port_list = [int(p.strip()) for p in ports.split(",")]
+    try:
+        port_list = [int(p.strip()) for p in ports.split(",")]
+    except ValueError:
+        raise click.BadParameter("Ports must be integers", param_hint="--ports") from None
+    if any(not 1 <= port <= 65535 for port in port_list):
+        raise click.BadParameter("Ports must be between 1 and 65535", param_hint="--ports")
     result = health_check(host, port_list)
 
     table = Table(title=f"Health Check: {host}")

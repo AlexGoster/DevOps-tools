@@ -38,13 +38,15 @@ def check_ssl_expiry(domain: str) -> Dict[str, Any]:
         with context.wrap_socket(sock, server_hostname=domain) as ssock:
             cert = ssock.getpeercert()
             expires = datetime.datetime.strptime(cert["notAfter"], "%b %d %H:%M:%S %Y %Z")
-            days_left = (expires - datetime.datetime.now()).days
+            expires = expires.replace(tzinfo=datetime.UTC)
+            now = datetime.datetime.now(datetime.UTC)
+            days_left = (expires - now).days
             return {
                 "domain": domain,
                 "issuer": dict(x[0] for x in cert["issuer"]),
                 "expires": expires.isoformat(),
                 "days_left": days_left,
-                "valid": days_left > 0,
+                "valid": expires > now,
             }
 
 

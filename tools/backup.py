@@ -3,6 +3,7 @@
 import os
 import shutil
 import datetime
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -13,8 +14,10 @@ def backup_directory(source: str, destination: str, exclude: list = None) -> dic
 
     if not source_path.exists():
         raise FileNotFoundError(f"Source not found: {source}")
+    if source_path.is_dir() and dest_path.resolve().is_relative_to(source_path.resolve()):
+        raise ValueError("Backup destination must be outside the source directory")
 
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     backup_name = f"{source_path.name}_{timestamp}"
     backup_path = dest_path / backup_name
 
@@ -23,11 +26,14 @@ def backup_directory(source: str, destination: str, exclude: list = None) -> dic
     if source_path.is_dir():
         shutil.copytree(source, backup_path, ignore=shutil.ignore_patterns(*(exclude or [])))
     else:
-        backup_path = dest_path / f"{source_path.name}_{timestamp}{source_path.suffix}"
+        backup_path = dest_path / f"{source_path.stem}_{timestamp}{source_path.suffix}"
         shutil.copy2(source, backup_path)
 
-    size = sum(f.stat().st_size for f in backup_path.rglob("*") if f.is_file())
-    files = sum(1 for _ in backup_path.rglob("*") if _.is_file())
+    copied_files = [backup_path] if backup_path.is_file() else [
+        path for path in backup_path.rglob("*") if path.is_file()
+    ]
+    size = sum(path.stat().st_size for path in copied_files)
+    files = len(copied_files)
 
     return {
         "source": str(source_path),
@@ -44,7 +50,9 @@ def cleanup_old_backups(destination: str, keep_days: int = 30) -> int:
     removed = 0
 
     for item in dest_path.iterdir():
-        if item.is_dir():
+        if item.is_dir() and not item.is_symlink() and re.fullmatch(
+            r".+_\d{8}_\d{6}(?:_\d{6})?", item.name
+        ):
             mtime = datetime.datetime.fromtimestamp(item.stat().st_mtime)
             if mtime < cutoff:
                 shutil.rmtree(item)

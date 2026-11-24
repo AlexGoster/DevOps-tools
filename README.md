@@ -1,178 +1,56 @@
 # DevOps Tools
 
-Набор CLI-утилит для серверного администрирования и DevOps задач.
+CLI на Python для разовых проверок сервера, резервного копирования и разбора логов.
+Учебный набор утилит; команды выполняются явно, встроенного планировщика нет.
 
-## Описание
+## Возможности
 
-Python-скрипты для автоматизации рутинных задач сисадмина: мониторинг, бэкапы, анализ логов, проверка SSL.
+| Команда | Что делает |
+| --- | --- |
+| `health` | Проверяет TCP-порты указанного хоста; CPU и RAM показывает для локальной машины |
+| `backup` | Копирует файл или каталог в отдельную папку с временной меткой |
+| `logs` | Разбирает строки access log; `--errors-only` считает ответы 4xx/5xx |
+| `ssl` | Проверяет срок действия сертификата через TLS |
 
-## Технологии
+Docker-клиент, SSH и уведомления доступны как вспомогательные Python-модули.
+Команды `docker` и `deploy` в CLI не подключены. Автоматический деплой и
+ежедневное расписание резервирования не реализованы.
 
-- **Язык:** Python 3.11+
-- **CLI:** Click
-- **Мониторинг:** psutil, requests
-- **SSH:** paramiko
-- **Уведомления:** smtplib, requests
+## Установка
 
-## Инструменты
-
-| Инструмент | Описание |
-|------------|----------|
-| `health` | Проверка состояния сервера (CPU, RAM, диск) |
-| `backup` | Автоматические бэкапы по расписанию |
-| `logs` | Анализ лог-файлов, поиск ошибок |
-| `ssl` | Проверка SSL-сертификатов |
-| `deploy` | Деплой приложений |
-| `docker` | Управление Docker-контейнерами |
-
-## Установка и запуск
+Нужен Python 3.11+. Из корня репозитория:
 
 ```bash
-# Клонирование
-git clone https://github.com/AlexGoster/DevOps-tools.git
-cd DevOps-tools
-
-# Установка зависимостей
-pip install -r requirements.txt
-
-# Помощь
+python -m venv .venv
+# Активируйте .venv согласно вашей ОС.
+python -m pip install -r requirements.txt
 python tools/cli.py --help
 ```
 
-## Примеры использования
+## Примеры
 
 ```bash
-# Проверка здоровья сервера
-python tools/cli.py health --host example.com
-
-# Бэкап директории
-python tools/cli.py backup --source /var/www --dest /backup
-
-# Анализ логов (только ошибки)
-python tools/cli.py logs --file /var/log/nginx/access.log --errors-only
-
-# Проверка SSL-сертификата
+python tools/cli.py health --host 127.0.0.1 --ports 8000,8080
+python tools/cli.py backup --source ./example-data --dest ./backups
+python tools/cli.py logs --file ./access.log --errors-only
 python tools/cli.py ssl --domain example.com
-
-# Деплой приложения
-python tools/cli.py deploy --repo /app --branch main
 ```
 
-## Структура проекта
+Источник бэкапа должен существовать; папка назначения должна находиться вне
+копируемого каталога. `error_rate` в сводке логов — доля 5xx;
+`--errors-only` дополнительно включает 4xx.
 
-```
-DevOps-tools/
-├── tools/
-│   ├── cli.py           # Главный CLI
-│   ├── server_health.py # Мониторинг сервера
-│   ├── backup.py        # Бэкапы
-│   ├── log_analyzer.py  # Анализ логов
-│   ├── ssl_checker.py   # Проверка SSL
-│   ├── deploy.py        # Деплой
-│   └── docker_manager.py
-├── utils/
-│   ├── ssh.py           # SSH-клиент
-│   └── notifications.py # Уведомления
-├── tests/
-├── requirements.txt
-└── README.md
+SSH-помощник сверяет сервер с `~/.ssh/known_hosts` и отклоняет неизвестные ключи.
+Для отдельного файла доверенных серверов передайте `known_hosts_path` в
+`SSHClient`. Добавляйте сервер после проверки отпечатка.
+
+## Проверка
+
+```bash
+python -m pip install pytest
+python -m pytest -o addopts= -q
 ```
 
-## Сценарии использования
-
-1. **Мониторинг сервера** — автоматическая проверка CPU/RAM/диска и уведомления
-2. **Бэкапы** — ежедневное резервное копирование критичных данных
-3. **Анализ логов** — быстрый поиск ошибок в больших логах
-4. **SSL-проверка** — мониторинг срока действия сертификатов
-
-## Что я изучила
-
-- Работа с subprocess и системными вызовами
-- SSH-подключения через paramiko
-- Мониторинг системы (psutil)
-- CLI-утилиты на Click
-
-## License
-
-MIT License - AlexGoster
-
-
-Last updated: 2026-09-20
-
-
-Last updated: 2026-09-20
-
-
-Last updated: 2026-09-20
-
-
-Last updated: 2026-09-23
-
-
-Last updated: 2026-09-23
-
-
-Last updated: 2026-09-23
-
-
-Last updated: 2026-09-21
-
-
-Last updated: 2026-09-21
-
-
-Last updated: 2026-09-21
-
-
-Last updated: 2026-09-22
-
-
-Last updated: 2026-09-22
-
-
-Last updated: 2026-09-22
-
-
-Last updated: 2026-09-19
-
-
-Last updated: 2026-09-19
-
-
-Last updated: 2026-09-19
-
-
-Last updated: 2026-09-24
-
-
-Last updated: 2026-09-24
-
-
-Last updated: 2026-09-24
-
-
-Last updated: 2026-09-25
-
-
-Last updated: 2026-09-25
-
-
-Last updated: 2026-09-25
-
-
-Last updated: 2026-09-26
-
-
-Last updated: 2026-09-26
-
-
-Last updated: 2026-09-26
-
-
-Last updated: 2026-09-27
-
-
-Last updated: 2026-09-27
-
-
-Last updated: 2026-09-27
+Тесты используют временные файлы и имитации SSH/TLS. Реальные серверы,
+отправка уведомлений и рабочие резервные копии в проверке не используются.
+[Подробности прежних проверок](VERIFICATION.md).
